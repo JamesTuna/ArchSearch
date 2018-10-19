@@ -17,12 +17,12 @@ class all_Kernel:
             net_list.append(net)
 
         self.N = N
-        label_compressor = LabelCompressor()
+        self.label_compressor = LabelCompressor()
 
         self.net = []
 
         for net in net_list:
-            self.net.append(Network(net,level,label_compressor,len(net["normal"])//2))
+            self.net.append(Network(net,level,self.label_compressor,len(net["normal"])//2))
 
 
 

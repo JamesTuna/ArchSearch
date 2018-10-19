@@ -1,6 +1,6 @@
 import numpy as np
 import json
-
+import pickle
 from all_kernel import all_Kernel
 
 
@@ -63,7 +63,7 @@ class GaussianProcess:
 
 def test():
     archs = []
-    no_of_sample = 300
+    no_of_sample = 136
     no_of_line = 1
     with open("test_data/train.txt", "r") as f:
         for line in f.readlines():
@@ -73,6 +73,8 @@ def test():
                 break
     gp = GaussianProcess(80)
     dist_mat = gp.cal_distance(archs)
+    with open('dist_mat.pkl','wb') as opf:
+        pickle.dump(dist_mat,opf)
     counter = 0
     for i in range(dist_mat.shape[0]-1):
         for j in range(i+1, dist_mat.shape[0]):
