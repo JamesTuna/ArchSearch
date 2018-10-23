@@ -3,7 +3,7 @@ import matplotlib.pyplot as pl
 import torch
 from torch.autograd import Variable
 #from gaussian_process.wl_kernel import WLKernel
-from NASsearch.wl_kernel import WLKernel
+#from NASsearch.wl_kernel import WLKernel
 import pickle,scipy,math
 
 def isPSD(A, tol=1e-8):
@@ -104,6 +104,7 @@ acc_list = []
 i = 0
 inputF = open('dist_mat.txt','rb')
 inputF = open('../Kernel_optimization/dist_mat.pkl','rb')
+
 with open("train_gp.txt") as file:
     for line in file:
         i += 1
