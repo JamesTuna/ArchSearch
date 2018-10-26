@@ -57,10 +57,10 @@ class CV(object):
 
 
 archs = []
-no_of_sample = 136
+no_of_sample = 256
 no_of_line = 1
 label = []
-with open("test_data/train.txt", "r") as f:
+with open("test_data/stage2.txt", "r") as f:
 	for line in f.readlines():
 		archs.append(json.loads(line.split(" accuracy: ")[0]))
 		label.append(float(line.split(" accuracy: ")[1][:-1]))

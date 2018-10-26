@@ -14,17 +14,15 @@ class GaussianProcess:
         self.kernel_param = kernel_param
 
     def square_exponential_kernel(self, dist):
-        l = 9.03240049309828
-        sq_f = 2.0169745775312116
-        sq_n = 0.22160936170816334
 
         l=31.5917
         sq_f=3.5919
         sq_n=0.4472 # -8.0 score on CV.py
-
-        l=20
-        sq_f=4
+        '''
+        l=195.35
+        sq_f=9.29
         sq_n=np.sqrt(0.5)
+        '''
 
         if len(dist) == len(dist[0]):
             return sq_f * np.exp(-0.5 * (1 / l ** 2) * dist) + np.eye(len(dist)) * sq_n**2
@@ -68,12 +66,12 @@ class GaussianProcess:
 
 def test():
     archs = []
-    no_of_sample = 136
+    no_of_sample = 256
     no_of_line = 1
     label = []
 
 
-    with open("test_data/train.txt", "r") as f:
+    with open("test_data/stage2.txt", "r") as f:
         for line in f.readlines():
             archs.append(json.loads(line.split(" accuracy: ")[0]))
             label.append(float(line.split(" accuracy: ")[1][:-1]))
