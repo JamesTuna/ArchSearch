@@ -11,4 +11,8 @@
   
 - ```all_kernel``` much faster for calculating pairwise distance between all the graphs, ```WL_kernel``` between single pair deprecated  
 - One way to ensure full rank of conariance matrix: fixed ```sq_n``` to be some value large enough that makes it positive definite (like 0.44)  
-  
+- Use reweightForWL to train and assign weights for each dimension of vectors computed by WL kernel. Experiment show that directly using WL kernel is no good for Gaussian process. Here are two graphs illustrating the point.   
+## Without weights, difference of performance against Euclidean distance 
+  ![not reweighted](https://github.com/JamesTuna/ArchSearch/blob/master/simpleWL.png)   
+## After reweighting, difference of performance against Euclidean distance
+  ![reweighted](https://github.com/JamesTuna/ArchSearch/blob/master/reweight.png)
