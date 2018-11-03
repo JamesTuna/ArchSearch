@@ -104,13 +104,13 @@ net_list = []
 acc_list = []
 i = 0
 inputF = open('../Kernel_optimization/dist_mat.pkl','rb')
-with open("../Kernel_optimization/test_data/stage2.txt") as file:
+with open("../Kernel_optimization/test_data/stage4.txt") as file:
     for line in file:
         i += 1
         net,acc = line.split(" accuracy: ")
         net_list.append(net)
         acc_list.append(float(acc[:-1]))
-        if i == 256:
+        if i == 136+256+256+256:
             break
 
 y = np.array(acc_list)
@@ -120,10 +120,13 @@ print(y)
 # normalized data for first 136 samples
 print("y len: ",len(y))
 # sq_f,l,sq_n,lr
-model = GaussianProcess(8,190,math.sqrt(0.5),0.05)
+model = GaussianProcess(1.221,66.365,math.sqrt(0.63),0.05)
+model = GaussianProcess(9.29,195,math.sqrt(0.63),0.05)
+model = GaussianProcess(0.5,70,math.sqrt(0.85),0.05)
 print("now fitting model...")
-model.dist_mat = np.array(pickle.load(inputF))[:256,:256]
+model.dist_mat = np.array(pickle.load(inputF))[:136+256+256+256,:136+256+256+256]
 print(model.dist_mat)
+print(model.dist_mat.shape)
 model.y = y
 inputF.close()
 print("now learning hp...")

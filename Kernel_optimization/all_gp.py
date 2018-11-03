@@ -18,10 +18,14 @@ class GaussianProcess:
         l=31.5917
         sq_f=3.5919
         sq_n=0.4472 # -8.0 score on CV.py
-        '''
+        
         l=195.35
         sq_f=9.29
-        sq_n=np.sqrt(0.5)
+        sq_n=np.sqrt(10)
+        '''
+        l=66.365
+        sq_f=1.221
+        sq_n=np.sqrt(0.63)
         '''
 
         if len(dist) == len(dist[0]):
@@ -34,9 +38,6 @@ class GaussianProcess:
         dist = np.zeros((len(all_nets),len(all_nets)))
         kernel = all_Kernel(N=3, netlist=all_nets, level=8)
         net_vectors = kernel.run()
-
-
-
         for i in range(len(all_nets)):
             for j in range(i+1,len(all_nets)):
                 dist[i,j] = np.sum((net_vectors[i]-net_vectors[j])**2)
@@ -45,6 +46,12 @@ class GaussianProcess:
             for j in range(0,i):
                 dist[i,j] = dist[j,i]
         return dist
+
+    def get_vectors(self, all_nets):
+        dist = np.zeros((len(all_nets),len(all_nets)))
+        kernel = all_Kernel(N=3, netlist=all_nets, level=8)
+        net_vectors = kernel.run()
+        return net_vectors
 
 
     def fit_predict(self, X, Xtest, y):
@@ -66,12 +73,12 @@ class GaussianProcess:
 
 def test():
     archs = []
-    no_of_sample = 256
+    no_of_sample = 136+256+256+256
     no_of_line = 1
     label = []
 
 
-    with open("test_data/stage2.txt", "r") as f:
+    with open("test_data/stage4.txt", "r") as f:
         for line in f.readlines():
             archs.append(json.loads(line.split(" accuracy: ")[0]))
             label.append(float(line.split(" accuracy: ")[1][:-1]))
@@ -97,5 +104,4 @@ def test():
                 print('identity: ',i,' and ',j)
     print(counter)
     
-
 test()

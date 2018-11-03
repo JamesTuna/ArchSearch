@@ -57,7 +57,7 @@ class CV(object):
 
 
 archs = []
-no_of_sample = 256
+no_of_sample = 392
 no_of_line = 1
 label = []
 with open("test_data/stage2.txt", "r") as f:
@@ -67,6 +67,7 @@ with open("test_data/stage2.txt", "r") as f:
 		no_of_line += 1
 		if no_of_line > no_of_sample:
 			break
+
 label = np.array(label)
 label = (label-label.mean())/label.std()
 tester = CV(archs,10,label)
