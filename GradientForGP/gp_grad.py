@@ -104,7 +104,7 @@ net_list = []
 acc_list = []
 i = 0
 inputF = open('../Kernel_optimization/dist_mat.pkl','rb')
-with open("../Kernel_optimization/test_data/stage4.txt") as file:
+with open("../Kernel_optimization/test_data/stage1.txt") as file:
     for line in file:
         i += 1
         net,acc = line.split(" accuracy: ")

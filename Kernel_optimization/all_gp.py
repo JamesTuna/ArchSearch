@@ -18,15 +18,6 @@ class GaussianProcess:
         l=31.5917
         sq_f=3.5919
         sq_n=0.4472 # -8.0 score on CV.py
-        
-        l=195.35
-        sq_f=9.29
-        sq_n=np.sqrt(10)
-        '''
-        l=66.365
-        sq_f=1.221
-        sq_n=np.sqrt(0.63)
-        '''
 
         if len(dist) == len(dist[0]):
             return sq_f * np.exp(-0.5 * (1 / l ** 2) * dist) + np.eye(len(dist)) * sq_n**2
@@ -35,13 +26,13 @@ class GaussianProcess:
 
 
     def cal_distance(self, all_nets):
+
         dist = np.zeros((len(all_nets),len(all_nets)))
-        kernel = all_Kernel(N=3, netlist=all_nets, level=8)
-        net_vectors = kernel.run()
+        net_vectors = self.get_vectors(all_nets)
         for i in range(len(all_nets)):
             for j in range(i+1,len(all_nets)):
                 dist[i,j] = np.sum((net_vectors[i]-net_vectors[j])**2)
-                #dist[i,j] = np.sqrt(dist[i,j])
+
         for i in range(len(all_nets)):
             for j in range(0,i):
                 dist[i,j] = dist[j,i]
@@ -51,6 +42,15 @@ class GaussianProcess:
         dist = np.zeros((len(all_nets),len(all_nets)))
         kernel = all_Kernel(N=3, netlist=all_nets, level=8)
         net_vectors = kernel.run()
+        # reweight net_vectors
+        print('vector shape:',net_vectors.shape)
+        with open('../reweightForWL/weight.pkl','rb') as f:
+            weight = pickle.load(f)
+        weight = np.tile(weight.data.numpy(),(len(all_nets),1))
+        print('weight shape:',weight.shape)
+        net_vectors = np.multiply(net_vectors,weight)
+        print('net_vectors\n',net_vectors)
+
         return net_vectors
 
 
@@ -61,9 +61,6 @@ class GaussianProcess:
         self.dist_mat = all_dist_mat[:len(X),:len(X)]
         K = self.square_exponential_kernel(self.dist_mat)
         self.L = np.linalg.cholesky(K)
-
-
-
         Lk = np.linalg.solve(self.L, self.square_exponential_kernel(all_dist_mat[:len(X),len(X):]))
         mu = np.dot(Lk.T, np.linalg.solve(self.L, self.y))
         K_ = self.square_exponential_kernel(all_dist_mat[len(X):,len(X):])
@@ -78,7 +75,7 @@ def test():
     label = []
 
 
-    with open("test_data/stage4.txt", "r") as f:
+    with open("test_data/stage2.txt", "r") as f:
         for line in f.readlines():
             archs.append(json.loads(line.split(" accuracy: ")[0]))
             label.append(float(line.split(" accuracy: ")[1][:-1]))

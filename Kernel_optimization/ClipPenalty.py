@@ -9,6 +9,7 @@ with open('./data.pkl','rb') as f:
 STEPS = 100000
 K = 0.1
 LR = 0.01
+K_=0
 N = net_v.shape[0]
 dim = net_v.shape[1]
 SAMPLES = np.arange(int(N*(N-1)/2))
@@ -45,8 +46,9 @@ def plot(sqd_x,weight,d_y):
 	x = torch.sum(sqd_x * weight,1).data.numpy().reshape(-1)
 	print(x)
 	x = np.sqrt(x)
-	plt.scatter(x,d_y.data.numpy().reshape(-1))
-	plt.plot(x,K*np.array(x),'r-')
+	ratio = 40/np.max(x)
+	plt.scatter(ratio*x,d_y.data.numpy().reshape(-1))
+	plt.plot(ratio*x,K_*np.array(x),'r-')
 	plt.ion()
 	plt.pause(5)
 	plt.close()
@@ -57,12 +59,14 @@ def batch_opt(batch_indices):
 	global K, sq_weight, optimizer, sqd_x, d_y
 	optimizer.zero_grad()
 	# normalize weight
-	#sq_weight = sq_weight/torch.sum(sq_weight)
+	#norm_sq_weight = sq_weight/torch.sum(sq_weight)
 	batch_x = sqd_x[batch_indices]
 	batch_y = d_y[batch_indices].view(-1)
 	bias = batch_y - torch.Tensor([K]) * torch.sqrt(torch.sum(batch_x * sq_weight,1))
+	bias = batch_y - torch.Tensor([K]) * torch.sum(batch_x * sq_weight,1)
 	# clip loss
 	loss = torch.sum(torch.max(torch.Tensor(np.zeros(len(batch_indices))), bias))
+	#loss = torch.sum(torch.max(torch.Tensor(-np.ones(len(batch_indices))), bias))
 	print('loss: ',loss)
 	loss.backward()
 	optimizer.step()
@@ -76,10 +80,13 @@ for i in range(STEPS):
 	print(i,sq_weight)
 	if i%200 == 0:
 		# refit K
+		norm_sq_weight = sq_weight/torch.sum(sq_weight)
 		sum_dist = torch.sum(torch.sqrt(torch.sum(sqd_x * sq_weight,1))).data.numpy()
 		sum_label_diff = torch.sum(d_y).data.numpy()
-		K = 3*sum_label_diff/sum_dist
+		K_ = 3*sum_label_diff/sum_dist
+		K = 5*sum_label_diff/torch.sum(torch.sum(sqd_x * sq_weight,1)).data.numpy()
 		print('K: ',K)
 	if i%500 == 0:
+		#norm_sq_weight = sq_weight/torch.sum(sq_weight)
 		plot(sqd_x,sq_weight,d_y)
 
