@@ -30,9 +30,10 @@ def dist_main(size, genotype):
 
     # dist.init_process_group(backend="gloo", init_method="tcp://127.0.0.1:7000", world_size=size, rank=rank)
     model = NetworkCIFAR(
-        C=36,
+        # C=36,
+        C=8,
         num_classes=10,
-        layers=20,
+        layers=8,
         auxiliary=False,
         genotype=genotype,
     )
@@ -42,7 +43,8 @@ def dist_main(size, genotype):
     criterion = criterion.cuda()
     optimizer = torch.optim.SGD(
         model.parameters(),
-        lr=0.025,
+        # lr=0.025,
+        lr=0.01,
         momentum=0.9,
         weight_decay=3e-4,
     )
@@ -97,10 +99,13 @@ def main(genotype, index):
     cudnn.enabled = True
 
     model = NetworkCIFAR(
-        C=8,
+        C=24,
+        # C=36,
         num_classes=10,
         layers=8,
+        # layers=20,
         auxiliary=False,
+        # auxiliary=True,
         genotype=genotype,
     )
     # print(model)
@@ -166,7 +171,8 @@ def train(train_queue, model, criterion, optimizer, drop_path_prob):
     for step, (input, target) in enumerate(train_queue):
         # with torch.cuda.device(0):
         input = Variable(input).cuda()
-        target = Variable(target).cuda(async=True)
+        # target = Variable(target).cuda(async=True)
+        target = Variable(target).cuda()
         #
         # input = Variable(input)
         # target = Variable(target)
@@ -205,7 +211,8 @@ def infer(valid_queue, model, criterion, drop_path_prob):
     for step, (input, target) in enumerate(valid_queue):
         # with torch.cuda.device(0):
         input = Variable(input, volatile=True).cuda()
-        target = Variable(target, volatile=True).cuda(async=True)
+        # target = Variable(target, volatile=True).cuda(async=True)
+        target = Variable(target, volatile=True).cuda()
         #
         # input = Variable(input, volatile=True)
         # target = Variable(target, volatile=True)

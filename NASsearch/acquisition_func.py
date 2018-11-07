@@ -2,8 +2,7 @@
 import numpy as np
 from scipy.stats import norm
 
-from NASsearch.gp import GaussianProcess
-
+from Kernel_optimization.all_gp import GaussianProcess
 
 class AcquisitionFunc:
     """ class for acquisition function
@@ -19,22 +18,25 @@ class AcquisitionFunc:
         self.y_train = y_train
         self.current_optimal = current_optimal
         self.mode = mode or "ei"
-        self.trade_off = trade_off or 0.01
+        self.trade_off = trade_off or 0.1
         self.model = GaussianProcess(80)
 
     def compute(self, X_test):
-        self.model.fit(self.X_train, self.y_train)
-        y_mean, y_variance, y_std = self.model.predict([X_test])
-        print(y_mean, " ", y_variance)
+        # self.model.fit(self.X_train, self.y_train)
+        # y_mean, y_variance, y_std = self.model.predict([X_test])
+        y_means, y_vars, y_stds = self.model.fit_predict(self.X_train, X_test, self.y_train)
+        # print(y_mean, " ", y_variance)
         # y_variance = y_std ** 2
-        z = (y_mean - self.current_optimal - self.trade_off) / y_std
+        z = (y_means - self.current_optimal - self.trade_off) / y_stds
 
         if self.mode == "ei":
-            if y_std < 0.0000000001:
-                return 0
-            result = y_std * (z * norm.cdf(z) + norm.pdf(z))
+            # if y_std < 0.0000000001:
+            #     return 0
+            result = y_stds * (z * norm.cdf(z) + norm.pdf(z))
         elif self.mode == "pi":
             result = norm.cdf(z)
+        elif self.mode == "ucb":
+            result = y_means + self.trade_off * y_stds
         else:
-            result = - (y_mean - self.trade_off * y_std)
-        return np.squeeze(result)
+            result = - (y_means - self.trade_off * y_stds)
+        return result, y_means, y_stds

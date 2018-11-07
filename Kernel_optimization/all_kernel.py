@@ -2,8 +2,8 @@ import json
 
 import numpy as np
 
-from dependency.label_compressor import LabelCompressor
-from dependency.network import Network
+from Kernel_optimization.dependency.label_compressor import LabelCompressor
+from Kernel_optimization.dependency.network import Network
 
 
 class all_Kernel:
@@ -22,10 +22,7 @@ class all_Kernel:
         self.net = []
 
         for net in net_list:
-            self.net.append(Network(net,level,self.label_compressor,len(net["normal"])//2))
-
-
-
+            self.net.append(Network(net, level, self.label_compressor, len(net["normal"]) // 2))
 
     def run(self):
 
@@ -36,7 +33,7 @@ class all_Kernel:
             label_set = list(set(label_set) | set(net.node_label))
         for net in self.net:
             net_vector.append(net.cal_graph_vector(label_set))
- 
+
         for i in range(self.N):
             for net in self.net:
                 net.run_iteration()
@@ -46,7 +43,6 @@ class all_Kernel:
 
             for i in range(len(self.net)):
                 net_vector[i] += self.net[i].cal_graph_vector(label_set)
-
 
         net_vector = np.array(net_vector)
         return net_vector
