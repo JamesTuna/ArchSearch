@@ -21,17 +21,11 @@ class AcquisitionFunc:
         self.trade_off = trade_off or 0.1
         self.model = GaussianProcess(80)
 
-    def compute(self, X_test):
-        # self.model.fit(self.X_train, self.y_train)
-        # y_mean, y_variance, y_std = self.model.predict([X_test])
-        y_means, y_vars, y_stds = self.model.fit_predict(self.X_train, X_test, self.y_train)
-        # print(y_mean, " ", y_variance)
-        # y_variance = y_std ** 2
+    def compute(self, X_test, weight_file):
+        y_means, y_vars, y_stds = self.model.fit_predict(self.X_train, X_test, self.y_train, weight_file)
         z = (y_means - self.current_optimal - self.trade_off) / y_stds
 
         if self.mode == "ei":
-            # if y_std < 0.0000000001:
-            #     return 0
             result = y_stds * (z * norm.cdf(z) + norm.pdf(z))
         elif self.mode == "pi":
             result = norm.cdf(z)

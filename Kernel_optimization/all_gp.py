@@ -5,25 +5,42 @@ import pickle
 from Kernel_optimization.all_kernel import all_Kernel
 
 
-def get_vectors(all_nets):
+def get_vectors(all_nets, weight_file, vector_file, predict):
     dist = np.zeros((len(all_nets), len(all_nets)))
     kernel = all_Kernel(N=3, netlist=all_nets, level=8)
     net_vectors = kernel.run()
     # reweight net_vectors
     print('vector shape:', net_vectors.shape)
-    with open('../reweightForWL/weight.pkl', 'rb') as f:
-        weight = pickle.load(f)
-    weight = np.tile(weight.data.numpy(), (len(all_nets), 1))
-    print('weight shape:', weight.shape)
-    net_vectors = np.multiply(net_vectors, weight)
+    if weight_file is not None:
+        with open(weight_file, 'rb') as f:
+            weight = pickle.load(f)
+
+        # weight = np.tile(weight.data.numpy(), (len(all_nets), 1))
+        weight = weight.data.numpy()
+        print('weight shape:', weight.shape)
+        if predict:
+            len_predict = net_vectors.shape[1]
+            len_weight = weight.shape[0]
+            avg_weight = np.mean(weight)
+            tail = np.full(len_predict - len_weight, avg_weight)
+            print("tail shape", tail.shape)
+            weight = np.append(weight, tail)
+
+        net_vectors = net_vectors * weight
     print('net_vectors\n', net_vectors.shape)
+    print('net_vectors\n', net_vectors)
+    # save vectors into file
+
+    if vector_file is not None:
+        with open(vector_file,'wb') as f:
+            pickle.dump(net_vectors,f)
 
     return net_vectors
 
 
-def cal_distance(all_nets):
+def cal_distance(all_nets, weight_file, vector_file, predict):
     dist = np.zeros((len(all_nets), len(all_nets)))
-    net_vectors = get_vectors(all_nets)
+    net_vectors = get_vectors(all_nets, weight_file, vector_file, predict)
     for i in range(len(all_nets)):
         for j in range(i + 1, len(all_nets)):
             dist[i, j] = np.sum((net_vectors[i] - net_vectors[j]) ** 2)
@@ -43,19 +60,19 @@ class GaussianProcess:
         self.kernel_param = kernel_param
 
     def square_exponential_kernel(self, dist):
-        l = 31.5917
-        sq_f = 3.5919
-        sq_n = 0.4472  # -8.0 score on CV.py
+        l = 25.3387
+        sq_f = 9.9766
+        sq_n = 0.45  # -8.0 score on CV.py
 
         if len(dist) == len(dist[0]):
             return sq_f * np.exp(-0.5 * (1 / l ** 2) * dist) + np.eye(len(dist)) * sq_n ** 2
         else:
             return sq_f * np.exp(-0.5 * (1 / l ** 2) * dist)
 
-    def fit_predict(self, X, Xtest, y):
+    def fit_predict(self, X, Xtest, y, weight_file):
         self.X = X
         self.y = np.array(y)
-        all_dist_mat = cal_distance(X + Xtest)
+        all_dist_mat = cal_distance(X + Xtest, weight_file, vector_file=None, predict=True)
         print(all_dist_mat)
         self.dist_mat = all_dist_mat[:len(X), :len(X)]
         K = self.square_exponential_kernel(self.dist_mat)
@@ -70,13 +87,13 @@ class GaussianProcess:
         return mu, s2, s
 
 
-def test():
+def test(stage_file, dist_mat_file, weight_file, vector_file):
     archs = []
     no_of_sample = 136 + 256 + 256 + 256
     no_of_line = 1
     label = []
 
-    with open("test_data/stage1.txt", "r") as f:
+    with open(stage_file, "r") as f:
         for line in f.readlines():
             archs.append(json.loads(line.split(" accuracy: ")[0]))
             label.append(float(line.split(" accuracy: ")[1][:-1]))
@@ -84,13 +101,9 @@ def test():
             if no_of_line > no_of_sample:
                 break
 
-    label = np.array(label)
-    label = (label - label.mean()) / label.std()
-    gp = GaussianProcess(80)
-
-    dist_mat = cal_distance(archs)
+    dist_mat = cal_distance(archs, weight_file, vector_file, predict=False)
     print(dist_mat)
-    with open('dist_mat.pkl', 'wb') as opf:
+    with open(dist_mat_file, 'wb') as opf:
         pickle.dump(dist_mat, opf)
     counter = 0
     for i in range(dist_mat.shape[0] - 1):
@@ -101,4 +114,20 @@ def test():
     print(counter)
 
 
-test()
+def save_vector_label(stage_file, label_file, dist_mat_file, weight_file, vector_file):
+    test(stage_file, dist_mat_file, weight_file, vector_file)
+    net_list = []
+    acc_list = []
+    i = 0
+    with open(stage_file) as file:
+        for line in file:
+            i += 1
+            net, acc = line.split(" accuracy: ")
+            net_list.append(net)
+            acc_list.append(float(acc[:-1]))
+            if i == 136:
+                break
+    y = np.array(acc_list)
+    y = (y - y.mean()) / y.std()
+    with open(label_file, 'wb') as f:
+        pickle.dump(y, f)

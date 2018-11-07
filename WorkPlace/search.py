@@ -14,13 +14,13 @@ import copy
 import numpy as np
 
 from NASsearch.acquisition_func import AcquisitionFunc
-# from NASsearch.gp import cal_distance
-from NASsearch.wl_kernel import WLKernel
-from Kernel_optimization.all_gp import  cal_distance
+from Kernel_optimization.all_gp import cal_distance
 from WorkPlace import train_eval
 
 OPERATIONS = ['avg_pool_3x3', 'max_pool_3x3', 'skip_connect', 'sep_conv_3x3', 'sep_conv_5x5', 'sep_conv_7x7',
               'dil_conv_3x3', 'conv_7x1_1x7']
+
+WEIGHT_FILE = "./cache/weight_1.pkl"
 
 
 def generate_combination(arch, b):
@@ -68,19 +68,24 @@ def normal_acc(file_names):
 def run_gp():
     parser = argparse.ArgumentParser()
     # parser.add_argument('arch', type=str, help='structure indicators')
-    parser.add_argument('--train_file', type=str, help='structure indicators')
-    parser.add_argument('--file_name', type=str, help='structure indicators')
+    # parser.add_argument('--train_file', type=str, help='structure indicators')
+    # parser.add_argument('--file_name', type=str, help='structure indicators')
     parser.add_argument('--out_file', type=str, help='structure indicators')
     parser.add_argument('--start', type=int, help='structure indicators')
     parser.add_argument('--end', type=int, help='structure indicators')
     args = parser.parse_args()
 
-    train_X, train_y, train_mean, train_std = normal_acc([args.train_file])
+    train_file = "./cache/stage_1.txt"
+    file_name = "./cache/stage_1.txt"
+
+    # train_file
+    train_X, train_y, train_mean, train_std = normal_acc([train_file])
+    print("train_std", train_std)
     current_optimal = np.max(train_y)
-    acquisition = AcquisitionFunc(train_X, train_y, current_optimal, mode="ucb", trade_off=0.5)
+    acquisition = AcquisitionFunc(train_X, train_y, current_optimal, mode="ucb", trade_off=0.01)
 
     prev_block_archs = []
-    with open(args.file_name, "r") as f:
+    with open(file_name, "r") as f:
         for line in f.readlines():
             prev_block_archs.append(line.split(" accuracy: ")[0])
 
@@ -89,16 +94,16 @@ def run_gp():
         for arch in prev_block_archs[args.start:args.end]:
             counter += 1
             print("counter", counter)
-            new_arch = generate_combination(json.loads(arch), 5)
+            new_arch = generate_combination(json.loads(arch), 2)
             length = len(new_arch)
             print(length)
-            for i in range(4):
+            for i in range(1):
                 print("range: ", i)
-                start = int(i * length / 4)
-                end = int((i + 1) * length / 4)
-                acquisition_value, mean, std = acquisition.compute(new_arch[start:end])
+                start = int(i * length / 1)
+                end = int((i + 1) * length / 1)
+                acquisition_value, mean, std = acquisition.compute(new_arch[start:end], weight_file=WEIGHT_FILE)
 
-                for i in range(int(length / 4)):
+                for i in range(int(length / 1)):
                     f.write(
                         new_arch[i] + " accquisition_value: " + str(acquisition_value[i]) + " mean: " + str(
                             mean[i] * train_std + train_mean) + " std: " + str(std[i] * train_std) + "\n")
@@ -147,7 +152,7 @@ def sort_arch():
 
 
 def eliminate_duplicate(archs, arch_items=None):
-    dist = cal_distance(archs)
+    dist = cal_distance(archs, weight_file=WEIGHT_FILE, vector_file=None, predict=True)
     zero_x, zero_y = np.where(dist == 0)
     delete_items = []
     for i in range(len(zero_x)):
@@ -166,13 +171,13 @@ def eliminate_duplicate(archs, arch_items=None):
 def test_eliminate():
     archs = []
     arch_items = []
-    with open("block4_arch_1000.txt", "r") as f:
+    with open("test.txt", "r") as f:
         for line in f.readlines():
-            arch = line.split(" acquisition: ")[0]
+            arch = line.split(" accquisition_value: ")[0]
             archs.append(arch)
-            value = float(line.split(" acquisition: ")[1].split(" mean: ")[0])
-            mean = float(line.split(" acquisition: ")[1].split(" mean: ")[1].split(" std: ")[0])
-            std = float(line.split(" acquisition: ")[1].split(" mean: ")[1].split(" std: ")[1])
+            value = float(line.split(" accquisition_value: ")[1].split(" mean: ")[0])
+            mean = float(line.split(" accquisition_value: ")[1].split(" mean: ")[1].split(" std: ")[0])
+            std = float(line.split(" accquisition_value: ")[1].split(" mean: ")[1].split(" std: ")[1])
             arch_items.append(dict(
                 arch=arch,
                 value=value,
@@ -242,9 +247,9 @@ def temp():
 
 
 if __name__ == "__main__":
-    progressive_search()
+    # progressive_search()
     # temp()
-    # run_gp()
+    run_gp()
     # _, accs, _, _ = normal_acc(["block1.txt"])
     # print(accs)
     # test_eliminate()
