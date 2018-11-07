@@ -8,20 +8,17 @@ with open('./data.pkl','rb') as f:
 	net_v,label = pickle.load(f)
 
 STEPS = 20000
-#K = torch.Tensor([0.001]).detach()
 LR = 0.01
 N = net_v.shape[0]
 SAMPLES = np.arange(N)
-# print(SAMPLES)
-
-
+LOAD_WEIGHT = True
 label = torch.Tensor(label)
 dim = net_v.shape[1]
-# weight = Variable(torch.Tensor(np.random.randn(dim)),requires_grad=True)
 weight = Variable(torch.Tensor(np.ones(dim)),requires_grad=True)
-# with open('./weight.pkl','rb') as f:
-	# weight = pickle.load(f)
-# weight = Variable(weight, requires_grad=True)
+if LOAD_WEIGHT:
+	with open('./weight.pkl','rb') as f:
+		weight = pickle.load(f)
+		weight = Variable(weight, requires_grad=True)
 net_v = torch.Tensor(net_v).detach()
 transformed_v = net_v * weight
 
@@ -30,10 +27,9 @@ def plot(transformed_v,label):
 	y =[]
 	for i in range(0,len(label)-1):
 		for j in range(i+1,len(label)):
-			x.append(np.sqrt(np.sum((transformed_v[i]-transformed_v[j])**2)))
+			x.append(np.log(np.sqrt(np.sum((transformed_v[i]-transformed_v[j])**2))))
 			y.append(np.abs(label[i]-label[j]))
 	plt.scatter(x,y)
-	# plt.show()
 	plt.ion()
 	plt.pause(10)
 	plt.close()
@@ -53,11 +49,6 @@ def batch_opt(batch_v, batch_label,optimizer,un_transformed_v,un_label):
 		if pos == -1 or neg == -1:
 			continue
 		loss += max(0, torch.sum((batch_v[i] - un_transformed_v[pos])**2) - torch.sum((batch_v[i] - un_transformed_v[neg])**2) - margin )
-		# loss += max(0, abs(label[neg]-batch_label[i]) - abs(label[pos]-batch_label[i] - margin) )
-		# for j in range(i+1,batch_v.shape[0]):
-			# a = torch.abs(batch_label[i]-batch_label[j]) - K* torch.sum((batch_v[i]-batch_v[j])**2)
-			# if a > 0:
-				# loss = loss+a
 	print(loss)
 	if loss != 0:
 		loss.backward()
