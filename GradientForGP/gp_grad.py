@@ -95,7 +95,7 @@ def gp_gradient(dist_mat_file, stage_file):
     # sq_f,l,sq_n,lr
     model = GaussianProcess(1.221, 66.365, math.sqrt(0.63), 0.05)
     model = GaussianProcess(9.29, 195, math.sqrt(0.63), 0.05)
-    model = GaussianProcess(6.4750, 21.3768, 0.45, 0.05)
+    model = GaussianProcess(5.7750, 19.5768, 0.45, 0.05)
     print("now fitting model...")
     model.dist_mat = np.array(pickle.load(inputF))[:136 + 256 + 256 + 256, :136 + 256 + 256 + 256]
     print(model.dist_mat)

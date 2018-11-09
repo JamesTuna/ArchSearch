@@ -7,34 +7,34 @@ def run():
     # save vectors and labels for stage i
     # save_vector_label(
     #     weight_file=None,
-    #     stage_file="./cache/stage_1.txt",
-    #     label_file="./cache/label_1.pkl",
-    #     dist_mat_file="./cache/dist_mat_1.pkl",
-    #     vector_file="./cache/vector_1.pkl"
+    #     stage_file="./cache/stage_2.txt",
+    #     label_file="./cache/label_2.pkl",
+    #     dist_mat_file="./cache/dist_mat_2.pkl",
+    #     vector_file="./cache/vector_2.pkl"
     # )
 
-    # # use soml to optimize weights
+    # use soml to optimize weights
     # reweight(
     #     load_weight=False,
-    #     weight_file="./cache/weight_1.pkl",
-    #     vector_file="./cache/vector_1.pkl",
-    #     label_file="./cache/label_1.pkl",
+    #     weight_file="./cache/weight_2.pkl",
+    #     vector_file="./cache/vector_2.pkl",
+    #     label_file="./cache/label_2.pkl",
     # )
 
     # recalculate dist mat calculated using optimised weights
     # save_vector_label(
-    #     weight_file="./cache/weight_1.pkl",
-    #     stage_file="./cache/stage_1.txt",
-    #     label_file="./cache/label_1.pkl",
-    #     dist_mat_file="./cache/dist_mat_1.pkl",
-    #     vector_file="./cache/vector_1.pkl"
+    #     weight_file="./cache/weight_2.pkl",
+    #     stage_file="./cache/stage_2.txt",
+    #     label_file="./cache/label_2.pkl",
+    #     dist_mat_file="./cache/dist_mat_2.pkl",
+    #     vector_file="./cache/vector_2.pkl"
     #
     # )
 
     # optimize hyper-parameters of gp process
     gp_gradient(
-        dist_mat_file="./cache/dist_mat_1.pkl",
-        stage_file="./cache/stage_1.txt",
+        dist_mat_file="./cache/dist_mat_2.pkl",
+        stage_file="./cache/stage_2.txt",
     )
     # run gp prdiction
     # sort archs

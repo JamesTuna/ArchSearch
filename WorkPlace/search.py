@@ -130,7 +130,7 @@ def sort_arch():
     # for arch in archs:
     #     my_list.insert(arch)
 
-    with open("b5_predict_ucb_h.txt", "r") as f:
+    with open("b1_predict_ucb_001.txt", "r") as f:
         for line in f.readlines():
             arch = line.split(" accquisition_value: ")[0]
             value = float(line.split(" accquisition_value: ")[1].split(" mean: ")[0])
@@ -144,7 +144,7 @@ def sort_arch():
                 std=std,
             ))
 
-    with open("block4_arch_1000.txt", "w") as f:
+    with open("block1_arch_1000.txt", "w") as f:
         for item in my_list.array:
             f.write(
                 item["arch"] + " acquisition: " + str(item["value"]) + " mean: " + str(item["mean"]) + " std: " + str(
@@ -152,7 +152,7 @@ def sort_arch():
 
 
 def eliminate_duplicate(archs, arch_items=None):
-    dist = cal_distance(archs, weight_file=WEIGHT_FILE, vector_file=None, predict=True)
+    dist = cal_distance(archs, weight_file=WEIGHT_FILE, vector_file=None, predict=True, dump_label=False)
     zero_x, zero_y = np.where(dist == 0)
     delete_items = []
     for i in range(len(zero_x)):
@@ -173,11 +173,11 @@ def test_eliminate():
     arch_items = []
     with open("test.txt", "r") as f:
         for line in f.readlines():
-            arch = line.split(" accquisition_value: ")[0]
+            arch = line.split(" acquisition: ")[0]
             archs.append(arch)
-            value = float(line.split(" accquisition_value: ")[1].split(" mean: ")[0])
-            mean = float(line.split(" accquisition_value: ")[1].split(" mean: ")[1].split(" std: ")[0])
-            std = float(line.split(" accquisition_value: ")[1].split(" mean: ")[1].split(" std: ")[1])
+            value = float(line.split(" acquisition: ")[1].split(" mean: ")[0])
+            mean = float(line.split(" acquisition: ")[1].split(" mean: ")[1].split(" std: ")[0])
+            std = float(line.split(" acquisition: ")[1].split(" mean: ")[1].split(" std: ")[1])
             arch_items.append(dict(
                 arch=arch,
                 value=value,
@@ -249,9 +249,9 @@ def temp():
 if __name__ == "__main__":
     # progressive_search()
     # temp()
-    run_gp()
+    # run_gp()
     # _, accs, _, _ = normal_acc(["block1.txt"])
     # print(accs)
     # test_eliminate()
-    # sort_arch()
+    sort_arch()
     # random_select(256)

@@ -101,5 +101,5 @@ def reweight(load_weight, weight_file, vector_file, label_file):
             plot(transformed_v.data.numpy(), label.data.numpy())
         if i == STEPS - 1:
             with open(weight_file, 'wb') as f:
-                pickle.dump(weight, f)
+                pickle.dump(weight.data.numpy(), f)
 

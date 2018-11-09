@@ -5,10 +5,10 @@ import pickle
 from Kernel_optimization.all_kernel import all_Kernel
 
 
-def get_vectors(all_nets, weight_file, vector_file, predict):
+def get_vectors(all_nets, weight_file, vector_file, predict, dump_label):
     dist = np.zeros((len(all_nets), len(all_nets)))
     kernel = all_Kernel(N=3, netlist=all_nets, level=8)
-    net_vectors = kernel.run()
+    net_vectors = kernel.run(dump_label)
     # reweight net_vectors
     print('vector shape:', net_vectors.shape)
     if weight_file is not None:
@@ -16,7 +16,7 @@ def get_vectors(all_nets, weight_file, vector_file, predict):
             weight = pickle.load(f)
 
         # weight = np.tile(weight.data.numpy(), (len(all_nets), 1))
-        weight = weight.data.numpy()
+        # weight = weight.data.numpy()
         print('weight shape:', weight.shape)
         if predict:
             len_predict = net_vectors.shape[1]
@@ -38,9 +38,9 @@ def get_vectors(all_nets, weight_file, vector_file, predict):
     return net_vectors
 
 
-def cal_distance(all_nets, weight_file, vector_file, predict):
+def cal_distance(all_nets, weight_file, vector_file, predict, dump_label):
     dist = np.zeros((len(all_nets), len(all_nets)))
-    net_vectors = get_vectors(all_nets, weight_file, vector_file, predict)
+    net_vectors = get_vectors(all_nets, weight_file, vector_file, predict, dump_label)
     for i in range(len(all_nets)):
         for j in range(i + 1, len(all_nets)):
             dist[i, j] = np.sum((net_vectors[i] - net_vectors[j]) ** 2)
@@ -60,8 +60,8 @@ class GaussianProcess:
         self.kernel_param = kernel_param
 
     def square_exponential_kernel(self, dist):
-        l = 25.3387
-        sq_f = 9.9766
+        l = 24.5576
+        sq_f = 9.7718
         sq_n = 0.45  # -8.0 score on CV.py
 
         if len(dist) == len(dist[0]):
@@ -72,7 +72,7 @@ class GaussianProcess:
     def fit_predict(self, X, Xtest, y, weight_file):
         self.X = X
         self.y = np.array(y)
-        all_dist_mat = cal_distance(X + Xtest, weight_file, vector_file=None, predict=True)
+        all_dist_mat = cal_distance(X + Xtest, weight_file, vector_file=None, predict=True, dump_label=False)
         print(all_dist_mat)
         self.dist_mat = all_dist_mat[:len(X), :len(X)]
         K = self.square_exponential_kernel(self.dist_mat)
@@ -101,7 +101,7 @@ def test(stage_file, dist_mat_file, weight_file, vector_file):
             if no_of_line > no_of_sample:
                 break
 
-    dist_mat = cal_distance(archs, weight_file, vector_file, predict=False)
+    dist_mat = cal_distance(archs, weight_file, vector_file, predict=False, dump_label=True)
     print(dist_mat)
     with open(dist_mat_file, 'wb') as opf:
         pickle.dump(dist_mat, opf)
@@ -125,8 +125,8 @@ def save_vector_label(stage_file, label_file, dist_mat_file, weight_file, vector
             net, acc = line.split(" accuracy: ")
             net_list.append(net)
             acc_list.append(float(acc[:-1]))
-            if i == 136:
-                break
+            # if i == 136:
+            #     break
     y = np.array(acc_list)
     y = (y - y.mean()) / y.std()
     with open(label_file, 'wb') as f:

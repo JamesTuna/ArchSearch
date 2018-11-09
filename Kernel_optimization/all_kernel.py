@@ -18,7 +18,7 @@ class all_Kernel:
         for net in net_list:
             self.net.append(Network(net, level, self.label_compressor, len(net["normal"]) // 2))
 
-    def run(self):
+    def run(self, dump_label):
         label_set = set()
         net_vector = []
         for net in self.net:
@@ -34,6 +34,7 @@ class all_Kernel:
             for i in range(len(self.net)):
                 net_vector[i] += self.net[i].cal_graph_vector(label_set)
         net_vector = np.array(net_vector)
-        self.label_compressor.dump("label_set.pkl")
+        if dump_label:
+            self.label_compressor.dump("label_set.pkl")
         print("labelset_len", len(self.label_compressor.label_set))
         return net_vector
